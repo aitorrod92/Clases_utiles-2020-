@@ -1,17 +1,26 @@
-public class HandlersParaArrastrar {
+import javafx.event.EventHandler;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
+
+public class AsignarHandlersParaArrastrar {
+
     /**
-     * Clase auxiliar para guardar las distancias iniciales
+     * Clase auxiliar para guardar las distancias iniciales en permitirArrastrar
      */
-     private class Delta {
+    private class Delta {
+
         double x, y;
     }
- 
+
     /**
      * Hace que uno o varios nodos se puedan mover arrastrándolo con el cursor
      *
+     * @param cursorCambia Booleano indicando si se debe cambiar el aspecto
+     * del cursor
      * @param nodos Nodos que se quiere poder arrastrar
      */
-    HandlersParaArrastrar(final Node... nodos) {
+    AsignarHandlersParaArrastrar(Boolean cursorCambia, final Node... nodos) {
         final Delta dragDelta = new Delta();
         for (Node nodo : nodos) {
             nodo.setOnMousePressed(new EventHandler<MouseEvent>() {
@@ -21,7 +30,9 @@ public class HandlersParaArrastrar {
                     for (Node n : nodos) {
                         dragDelta.x = n.getTranslateX() - mouseEvent.getX();
                         dragDelta.y = n.getTranslateY() - mouseEvent.getY();
-                        nodo.getScene().setCursor(Cursor.MOVE);
+                        if (cursorCambia) {
+                            nodo.getScene().setCursor(Cursor.MOVE);
+                        }
                     }
                 }
             });
