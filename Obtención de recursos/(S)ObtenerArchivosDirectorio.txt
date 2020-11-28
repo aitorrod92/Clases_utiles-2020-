@@ -1,0 +1,13 @@
+    private ArrayList<File> ObtenerArchivosDirectorio(String rutaDirectorio, 
+            String[] formatosAdmitidos) {
+        ArrayList<File> archivosDirectorio = new ArrayList();
+        File directorio = new File(rutaDirectorio);
+        for (File archivo : directorio.listFiles()) {
+            for (String formato : formatosAdmitidos) {
+                if (archivo.getName().toLowerCase().endsWith(formato)) {
+                    archivosDirectorio.add(archivo);
+                }
+            }
+        }
+        return archivosDirectorio;
+    }
