@@ -1,0 +1,208 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.security.CodeSource;
+import java.util.ArrayList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+/**
+ * Clase para obtener recursos de fuera o dentro del JAR, accediendo desde
+ * distintos puntos.
+ */
+public class ObtenerRecursos {
+
+    private String rutaDirectorio;
+    private String[] formatosAdmitidos;
+    private File archivo;
+    private Class clase;
+
+    /**
+     * Constructor sin parámetros, sólo utilizado para consultar fácilmente los
+     * métodos.
+     */
+    public ObtenerRecursos() {
+
+    }
+
+    /**
+     * Constructor para obtener recursos externos.
+     *
+     * @param rutaDirectorio Desde el archivo jar o desde la raíz de la
+     * aplicación.
+     * @param formatosAdmitidos
+     */
+    public ObtenerRecursos(String rutaDirectorio, String[] formatosAdmitidos) {
+        this.rutaDirectorio = rutaDirectorio;
+        this.formatosAdmitidos = formatosAdmitidos;
+    }
+
+    /**
+     * Constructor para leer un archivo de texto externo.
+     *
+     * @param archivo
+     */
+    public ObtenerRecursos(File archivo) {
+        this.archivo = archivo;
+    }
+
+    /**
+     * Constructor para obtener recursos dentro de un JAR.
+     *
+     * @param rutaDirectorio Desde la clase especificada.
+     * @param clase
+     * @param formatosAdmitidos
+     */
+    public ObtenerRecursos(String rutaDirectorio, Class clase, String[] formatosAdmitidos) {
+        this.rutaDirectorio = rutaDirectorio;
+        this.clase = clase;
+        this.formatosAdmitidos = formatosAdmitidos;
+    }
+
+    /**
+     * Constructor para leer un archivo de texto dentro del JAR.
+     *
+     * @param rutaDirectorio
+     * @param clase
+     */
+    public ObtenerRecursos(String rutaDirectorio, Class clase) {
+        this.rutaDirectorio = rutaDirectorio;
+        this.clase = clase;
+    }
+
+    /**
+     * Obtiene los archivos contenidos en un directorio externo. Requiere usar
+     * el constructor que tiene "File" y "String[]" como parámetros.
+     *
+     * @return Listado de File.
+     */
+    public ArrayList<File> ObtenerArchivosDirectorioFuera() {
+        ArrayList<File> archivosDirectorio = new ArrayList();
+        File directorio = new File(rutaDirectorio);
+        for (File archivo : directorio.listFiles()) {
+            for (String formato : formatosAdmitidos) {
+                if (archivo.getName().toLowerCase().endsWith(formato)) {
+                    archivosDirectorio.add(archivo);
+                }
+            }
+        }
+        return archivosDirectorio;
+    }
+
+    /**
+     * Obtiene un string con el contenido de un archivo de texto que está fuera
+     * del JAR. Requiere usar el constructor que sólo tiene "File" como
+     * parámetro.
+     *
+     * @return String con el contenido del archivo.
+     * @throws FileNotFoundException Si el archivo no existe.
+     * @throws IOException Si el archivo no se puede leer.
+     */
+    public String ObtenerTextoFuera() throws FileNotFoundException, IOException {
+        FileReader fr = new FileReader(archivo);
+        BufferedReader br = new BufferedReader(new FileReader(archivo));
+        String string = "";
+        String line = null;
+        while ((line = br.readLine()) != null) {
+            string = string.concat(line + "\n");
+        }
+        br.close();
+        fr.close();
+        return string;
+    }
+
+    /**
+     * Obtiene el listado de inputstreams de un directorio dentro del JAR, los
+     * cuales pueden ser utilizados para generar archivos de distinto tipo.
+     * Requiere usar el constructor que sólo tiene "String", "Class" y
+     * "String[]" como parámetros
+     *
+     *
+     * (AÑADIR FILTRO POR FORMATOS ADMITIDOS)
+     *
+     * @return Listado de InputStream.
+     */
+    public ArrayList<InputStream> ObtenerArchivosDirectorioDentro() {
+        CodeSource src = clase.getProtectionDomain().getCodeSource();
+        ArrayList<String> ArrayNombres = new ArrayList<>();
+        if (src != null) {
+            URL jar = src.getLocation();
+            ZipInputStream zip;
+            try {
+                zip = new ZipInputStream(jar.openStream());
+                while (true) {
+                    ZipEntry e = zip.getNextEntry();
+                    if (e == null) {
+                        break;
+                    }
+                    if (e.getName().contains(rutaDirectorio) && !e.getName().endsWith(rutaDirectorio + "/")) {
+                        ArrayNombres.add(e.getName().substring(e.getName().indexOf(rutaDirectorio.substring(rutaDirectorio.indexOf("/") + 1))));
+                    }
+                }
+            } catch (IOException ex) {
+                System.out.println("No se puede leer el JAR");
+            }
+        } else {
+            System.out.println("No se ha podido acceder al directorio");
+        }
+
+        ArrayList<InputStream> ArrayInputs = new ArrayList<>();
+
+        /**
+         * Rellenamos ArraInputs
+         */
+        for (int i = 0; i < ArrayNombres.size(); i++) {
+            InputStream input = this.getClass().getResourceAsStream(ArrayNombres.get(i));
+            if (input != null) {
+                ArrayInputs.add(input);
+            }
+        }
+        return ArrayInputs;
+    }
+
+    /**
+     * Obtiene un string con el contenido de un archivo de texto que está fuera
+     * del JAR. Requiere usar el constructor que tiene "String" y "Class" como
+     * parámetros.
+     *
+     * @return
+     */
+    public String ObtenerTextoDentro() {
+        CodeSource src = clase.getProtectionDomain().getCodeSource();
+        String string = "";
+        if (src != null) {
+            URL jar = src.getLocation();
+            ZipInputStream zip;
+            try {
+                zip = new ZipInputStream(jar.openStream());
+                while (true) {
+                    ZipEntry e = zip.getNextEntry();
+                    if (e == null) {
+                        break;
+                    }
+                    if (e.getName().contains(rutaDirectorio) && !e.getName().endsWith(rutaDirectorio + "/")) {
+                        InputStreamReader isr = new InputStreamReader(this.getClass().getResourceAsStream(rutaDirectorio));
+                        BufferedReader br = new BufferedReader(isr);
+                        String line = null;
+                        while ((line = br.readLine()) != null) {
+                            string = string.concat(line + "\n");
+                        }
+                        br.close();
+                        isr.close();
+                    }
+                }
+            } catch (IOException ex) {
+                System.out.println("No se puede leer el JAR");
+            }
+        } else {
+            System.out.println("No se ha podido acceder al directorio");
+
+        }
+        return string;
+    }
+}
