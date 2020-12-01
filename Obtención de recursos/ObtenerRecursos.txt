@@ -56,12 +56,14 @@ public class ObtenerRecursos {
      *
      * @param rutaDirectorio Desde la clase especificada.
      * @param clase
-     * @param formatosAdmitidos
+     * @param terminación Sirve para indicar los formatos de archivo admitidos
+     * (búsqueda en directorio) o el nombre del archivo (búsqueda de un archivo
+     * específico).
      */
-    public ObtenerRecursos(String rutaDirectorio, Class clase, String[] formatosAdmitidos) {
+    public ObtenerRecursos(String rutaDirectorio, Class clase, String[] terminación) {
         this.rutaDirectorio = rutaDirectorio;
         this.clase = clase;
-        this.formatosAdmitidos = formatosAdmitidos;
+        this.formatosAdmitidos = terminación;
     }
 
     /**
@@ -119,11 +121,8 @@ public class ObtenerRecursos {
     /**
      * Obtiene el listado de inputstreams de un directorio dentro del JAR, los
      * cuales pueden ser utilizados para generar archivos de distinto tipo.
-     * Requiere usar el constructor que sólo tiene "String", "Class" y
-     * "String[]" como parámetros
-     *
-     *
-     * (AÑADIR FILTRO POR FORMATOS ADMITIDOS)
+     * También permite obtener archivos concretos. Requiere usar el constructor
+     * que sólo tiene "String", "Class" y "String[]" como parámetros
      *
      * @return Listado de InputStream.
      */
@@ -141,7 +140,11 @@ public class ObtenerRecursos {
                         break;
                     }
                     if (e.getName().contains(rutaDirectorio) && !e.getName().endsWith(rutaDirectorio + "/")) {
-                        ArrayNombres.add(e.getName().substring(e.getName().indexOf(rutaDirectorio.substring(rutaDirectorio.indexOf("/") + 1))));
+                        for (String formato : formatosAdmitidos) {
+                            if (e.getName().endsWith(formato)) {
+                                ArrayNombres.add(e.getName().substring(e.getName().indexOf(rutaDirectorio.substring(rutaDirectorio.indexOf("/") + 1))));
+                            }
+                        }
                     }
                 }
             } catch (IOException ex) {
