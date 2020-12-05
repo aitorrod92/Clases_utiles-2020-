@@ -1,6 +1,9 @@
+import com.sun.javafx.geom.BaseBounds;
+import com.sun.javafx.geom.transform.BaseTransform;
+import com.sun.javafx.jmx.MXNodeAlgorithm;
+import com.sun.javafx.jmx.MXNodeAlgorithmContext;
+import com.sun.javafx.sg.prism.NGNode;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -17,6 +20,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import pvzheroes.clases.diccionarios.DiccionarioPropiedades;
 
 /**
  * Generar un rectángulo informativo en un nodo, con un encabezado en negrita y
@@ -43,7 +47,7 @@ import javafx.scene.text.Text;
  * defecto, comentar las porciones relevantes de código.
  *
  */
-public class ToolTip {
+public class ToolTip extends Node {
 
     public static Boolean EnRectángulo = false;
     public static Boolean EnComponente = false;
@@ -58,8 +62,9 @@ public class ToolTip {
     private final Boolean EsLink;
     private String colorFondo = "";
     private String colorBorde = "";
+    private static final int TIEMPOPORDEFECTO = 2000;
 
-    private int milisegundos = 0;
+    private static int milisegundos = TIEMPOPORDEFECTO;
     private Temporizador temp;
     public Boolean CampoFalso;
 
@@ -72,6 +77,9 @@ public class ToolTip {
         this.textoEncabezado = textoEncabezado;
         this.textoDescripción = textoDescripción;
         this.EsLink = EsLink;
+
+        //AQUÍ
+        milisegundos = Integer.parseInt(DiccionarioPropiedades.PROP.getProperty("retardoAyuda"));
 
         sp = GenerarToolTip();
         AñadirHandlers(sp);
@@ -114,8 +122,8 @@ public class ToolTip {
         CambiarColor();
     }
 
-    public void setTemporizador(int milisegundos) {
-        this.milisegundos = milisegundos;
+    public static void setTemporizador(int milisegundos) {
+        ToolTip.milisegundos = milisegundos;
     }
 
     /**
@@ -201,8 +209,10 @@ public class ToolTip {
             @Override
             public void handle(MouseEvent event) {
                 if (milisegundos != 0) {
+
                     temp = new Temporizador(milisegundos, 1, ToolTip.this, "MostrarToolTip");
                     temp.start();
+
                 } else {
                     MostrarToolTip();
                 }
@@ -214,7 +224,9 @@ public class ToolTip {
                 nodo.setOnMouseExited(new EventHandler<MouseEvent>() {
                     @Override
                     public void handle(MouseEvent event) {
-                        temp.interrumpirEspera();
+                        if (milisegundos != 0) {
+                            temp.interrumpirEspera();
+                        }
                         EnComponente = false;
                         YaEntrado = false;
                         sp.toBack();
@@ -253,7 +265,7 @@ public class ToolTip {
      *
      * @param argumentos
      */
-    public void MostrarToolTip(String ... argumentos) {
+    public void MostrarToolTip(String... argumentos) {
         /* Únicamente activos cuando la propiedad correspondiente es true */
         if (activación) {
             EnComponente = true;
@@ -337,5 +349,25 @@ public class ToolTip {
         s.setRadius(10);
         r.setEffect(s);
         return r;
+    }
+
+    @Override
+    protected NGNode impl_createPeer() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public BaseBounds impl_computeGeomBounds(BaseBounds bounds, BaseTransform tx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected boolean impl_computeContains(double localX, double localY) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object impl_processMXNode(MXNodeAlgorithm alg, MXNodeAlgorithmContext ctx) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
