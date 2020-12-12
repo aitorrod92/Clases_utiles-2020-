@@ -8,7 +8,11 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -19,74 +23,23 @@ import java.util.zip.ZipInputStream;
  * distintos puntos.
  */
 public class ObtenerRecursos {
-    
-    private String rutaDirectorio;
-    private String[] formatosAdmitidos;
-    private File archivo;
-    private Class clase;
 
     /**
-     * Constructor sin parámetros, sólo utilizado para consultar fácilmente los
-     * métodos.
+     * Constructor sin par�metros, s�lo utilizado para consultar f�cilmente los
+     * m�todos.
      */
     public ObtenerRecursos() {
-        
+
     }
 
     /**
-     * Constructor para obtener recursos externos.
+     * Obtiene los archivos contenidos en un directorio externo.
      *
-     * @param rutaDirectorio Desde el archivo jar o desde la raíz de la
-     * aplicación.
-     * @param formatosAdmitidos
-     */
-    public ObtenerRecursos(String rutaDirectorio, String[] formatosAdmitidos) {
-        this.rutaDirectorio = rutaDirectorio;
-        this.formatosAdmitidos = formatosAdmitidos;
-    }
-
-    /**
-     * Constructor para leer un archivo de texto externo.
-     *
-     * @param archivo
-     */
-    public ObtenerRecursos(File archivo) {
-        this.archivo = archivo;
-    }
-
-    /**
-     * Constructor para obtener recursos dentro de un JAR.
-     *
-     * @param rutaDirectorio Desde la clase especificada.
-     * @param clase
-     * @param terminación Sirve para indicar los formatos de archivo admitidos
-     * (búsqueda en directorio) o el nombre del archivo (búsqueda de un archivo
-     * específico).
-     */
-    public ObtenerRecursos(String rutaDirectorio, Class clase, String[] terminación) {
-        this.rutaDirectorio = rutaDirectorio;
-        this.clase = clase;
-        this.formatosAdmitidos = terminación;
-    }
-
-    /**
-     * Constructor para leer un archivo de texto dentro del JAR.
-     *
-     * @param rutaDirectorio
-     * @param clase
-     */
-    public ObtenerRecursos(String rutaDirectorio, Class clase) {
-        this.rutaDirectorio = rutaDirectorio;
-        this.clase = clase;
-    }
-
-    /**
-     * Obtiene los archivos contenidos en un directorio externo. Requiere usar
-     * el constructor que tiene "File" y "String[]" como parámetros.
-     *
+     * @param rutaDirectorio Ruta al directorio desde el root del classpath.
+     * @param formatosAdmitidos Formatos de archivo admitidos.
      * @return Listado de File.
      */
-    public ArrayList<File> ObtenerRecursosDirectorioFuera() {
+    public ArrayList<File> ObtenerRecursosDirectorioFuera(String rutaDirectorio, String[] formatosAdmitidos) {
         ArrayList<File> archivosDirectorio = new ArrayList();
         File directorio = new File(rutaDirectorio);
         for (File archivo : directorio.listFiles()) {
@@ -100,15 +53,15 @@ public class ObtenerRecursos {
     }
 
     /**
-     * Obtiene un string con el contenido de un archivo de texto que está fuera
-     * del JAR. Requiere usar el constructor que sólo tiene "File" como
-     * parámetro.
+     * Obtiene un string con el contenido de un archivo de texto que est� fuera
+     * del JAR.
      *
+     * @param archivo Archivo de texto a leer
      * @return String con el contenido del archivo.
      * @throws FileNotFoundException Si el archivo no existe.
      * @throws IOException Si el archivo no se puede leer.
      */
-    public String ObtenerTextoFuera() throws FileNotFoundException, IOException {
+    public String ObtenerTextoFuera(File archivo) throws FileNotFoundException, IOException {
         FileReader fr = new FileReader(archivo);
         BufferedReader br = new BufferedReader(new FileReader(archivo));
         String string = "";
@@ -124,12 +77,10 @@ public class ObtenerRecursos {
     /**
      * Obtiene el listado de inputstreams de un directorio dentro del JAR, los
      * cuales pueden ser utilizados para generar archivos de distinto tipo.
-     * Requiere usar el constructor que sólo tiene "String", "Class" y
-     * "String[]" como parámetros
      *
      * @return Listado de InputStream.
      */
-    public ArrayList<InputStream> ObtenerRecursosDirectorioDentro() {
+    public ArrayList<InputStream> ObtenerRecursosDirectorioDentro(String rutaDirectorio, Class clase, String[] formatosAdmitidos) {
         CodeSource src = clase.getProtectionDomain().getCodeSource();
         ArrayList<String> ArrayNombres = new ArrayList<>();
         if (src != null) {
@@ -156,7 +107,7 @@ public class ObtenerRecursos {
         } else {
             System.out.println("No se ha podido acceder al directorio");
         }
-        
+
         ArrayList<InputStream> ArrayInputs = new ArrayList<>();
 
         /**
@@ -172,13 +123,15 @@ public class ObtenerRecursos {
     }
 
     /**
-     * Obtiene un string con el contenido de un archivo de texto que está dentro
-     * del JAR. Requiere usar el constructor que tiene "String" y "Class" como
-     * parámetros.
+     * Obtiene un string con el contenido de un archivo de texto que est� dentro
+     * del JAR.
      *
+     * @param rutaDirectorio Ruta desde la clase en la que se encuentra el
+     * recurso.
+     * @param clase Clase desde la que parte el @param rutaDirectorio.
      * @return
      */
-    public String ObtenerTextoDentro() {
+    public String ObtenerTextoDentro(String rutaDirectorio, Class clase) {
         String string = "";
         InputStreamReader isr = new InputStreamReader(clase.getResourceAsStream(rutaDirectorio));
         BufferedReader br = new BufferedReader(isr);
@@ -193,32 +146,4 @@ public class ObtenerRecursos {
         return string;
     }
 
-    /**
-     * Obtiene el listado de InputStreams correspondientes a los archivos de un
-     * archivo comprimido.Requiere utilizar el constructor que usa como
-     * parámetro "File".
-     *
-     * @return Listado de InputStream.
-     * @throws java.io.IOException
-     */
-    public ArrayList<InputStream> ObtenerRecursosComprimido() throws IOException {
-        ZipFile zipfile = new ZipFile(archivo);
-        ArrayList<InputStream> ArrayInputs = new ArrayList<>();
-        Enumeration<? extends ZipEntry> entradas = zipfile.entries();
-        try {
-            while (true) {
-                try {
-                    ZipEntry entrada = entradas.nextElement();
-                    InputStream is = zipfile.getInputStream(entrada);
-                    ArrayInputs.add(is);
-                } catch (NoSuchElementException e) {
-                    break;
-                }
-            }
-        } catch (IOException ex) {
-            System.out.println("No se puede leer el archivo comprimido");
-        }
-        return ArrayInputs;
-    }
-    
 }
