@@ -8,7 +8,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -16,7 +19,7 @@ import java.util.zip.ZipInputStream;
  * distintos puntos.
  */
 public class ObtenerRecursos {
-
+    
     private String rutaDirectorio;
     private String[] formatosAdmitidos;
     private File archivo;
@@ -27,7 +30,7 @@ public class ObtenerRecursos {
      * métodos.
      */
     public ObtenerRecursos() {
-
+        
     }
 
     /**
@@ -153,7 +156,7 @@ public class ObtenerRecursos {
         } else {
             System.out.println("No se ha podido acceder al directorio");
         }
-
+        
         ArrayList<InputStream> ArrayInputs = new ArrayList<>();
 
         /**
@@ -189,4 +192,33 @@ public class ObtenerRecursos {
         }
         return string;
     }
+
+    /**
+     * Obtiene el listado de InputStreams correspondientes a los archivos de un
+     * archivo comprimido.Requiere utilizar el constructor que usa como
+     * parámetro "File".
+     *
+     * @return Listado de InputStream.
+     * @throws java.io.IOException
+     */
+    public ArrayList<InputStream> ObtenerRecursosComprimido() throws IOException {
+        ZipFile zipfile = new ZipFile(archivo);
+        ArrayList<InputStream> ArrayInputs = new ArrayList<>();
+        Enumeration<? extends ZipEntry> entradas = zipfile.entries();
+        try {
+            while (true) {
+                try {
+                    ZipEntry entrada = entradas.nextElement();
+                    InputStream is = zipfile.getInputStream(entrada);
+                    ArrayInputs.add(is);
+                } catch (NoSuchElementException e) {
+                    break;
+                }
+            }
+        } catch (IOException ex) {
+            System.out.println("No se puede leer el archivo comprimido");
+        }
+        return ArrayInputs;
+    }
+    
 }
