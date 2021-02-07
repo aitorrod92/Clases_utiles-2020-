@@ -13,6 +13,7 @@ public class BarraDeProgreso extends ProgressBar {
 
     private double progreso;
     private double aumentoPorTarea;
+    private int duraciónAnimación = 1000;
 
     private ArrayList<String> colores;
     private int contadorColores;
@@ -87,7 +88,7 @@ public class BarraDeProgreso extends ProgressBar {
         progreso += aumentoPorTarea;
         Timeline timeline = new Timeline();
         KeyValue keyValue = new KeyValue(this.progressProperty(), progreso);
-        KeyFrame keyFrame = new KeyFrame(new Duration(1000), keyValue);
+        KeyFrame keyFrame = new KeyFrame(new Duration(duraciónAnimación), keyValue);
         timeline.getKeyFrames().add(keyFrame);
         if (colores != null) {
             CambiarColor();
@@ -102,5 +103,9 @@ public class BarraDeProgreso extends ProgressBar {
 
     public double getProgreso() {
         return progreso;
+    }
+
+    public void setDuraciónAnimación(int duraciónAnimación) {
+        this.duraciónAnimación = duraciónAnimación;
     }
 }
