@@ -51,7 +51,7 @@ public class BarraDeProgreso extends ProgressBar {
      * @param AnimaciónInicial Se muestra animación de inicio o no.
      *
      */
-    public BarraDeProgreso(double progreso, int NúmeroDeTareas, String[] colores, Boolean AnimaciónInicial) {
+    public BarraDeProgreso(double progreso, int NúmeroDeTareas, Boolean AnimaciónInicial, String[] colores) {
         DefinirParámetrosComunesInicio(progreso, AnimaciónInicial, NúmeroDeTareas);
         this.colores = new ArrayList();
         contadorColores = 0;
